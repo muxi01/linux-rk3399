@@ -9,7 +9,7 @@
 
 #define SOUND_CARD  1
 #define TOUCH_SCREEN 1
-
+#define CAMERA_ONLINE 0
 / {
 	model = "Sogo Translation Bao";
 	compatible = "SogoTranslation,rk3399", "rockchip,rk3399";
@@ -53,21 +53,21 @@
 			debounce-interval = <100>;
 			gpios = <&gpio1 RK_PA1 GPIO_ACTIVE_LOW>;
 			label = "GPIO key camera";
-			linux,code = <KEY_F1>;
+			linux,code = <KEY_ENTER>;
 		};
 
 		key-trans-a {
 			debounce-interval = <100>;
 			gpios = <&gpio1 RK_PC7 GPIO_ACTIVE_LOW>;
 			label = "GPIO key trans a";
-			linux,code = <KEY_F2>;
+			linux,code = <KEY_UP>;
 		};
 
 		key-trans-b {
 			debounce-interval = <100>;
 			gpios = <&gpio1 RK_PC2 GPIO_ACTIVE_LOW>;
 			label = "GPIO Key trans b";
-			linux,code = <KEY_F3>;
+			linux,code = <KEY_DOWN>;
 		};
 	};
 
@@ -468,7 +468,7 @@
 			vcc3v3_s3: LDO_REG8 {
 				regulator-always-on;
 				regulator-boot-on;
-				regulator-min-microvolt = <3300000>;
+				regulator-min-microvolt = <2600000>;
 				regulator-max-microvolt = <3300000>;
 				regulator-name = "vcc3v3_s3";
 				regulator-state-mem {
@@ -559,13 +559,6 @@
 #endif 
 };
 
-
-&i2c3 {
-	i2c-scl-rising-time-ns = <450>;
-	i2c-scl-falling-time-ns = <15>;
-	status = "okay";
-};
-
 &i2c4 {
 	i2c-scl-rising-time-ns = <600>;
 	i2c-scl-falling-time-ns = <40>;
@@ -599,6 +592,44 @@
 
 &i2c7 {
 	status = "okay";
+
+	ov8858: ov8858@36 {
+		status = "okay";
+		compatible = "ovti,ov8858";
+		reg = <0x36>;
+		clocks = <&cru SCLK_CIF_OUT>;
+		clock-names = "xvclk";
+
+		avdd-supply = <&vcc1v8_dvp>;
+		rockchip,camera-module-debug-freq = <1>;
+		rockchip,camera-module-index = <1>;
+		rockchip,camera-module-facing = "front";
+		rockchip,camera-module-name = "JSD3425-C1";
+		rockchip,camera-module-lens-name = "JSD3425-C1";
+
+		power-gpios = <&gpio1 RK_PA2 GPIO_ACTIVE_HIGH>;
+		reset-gpios = <&gpio2 RK_PD3 GPIO_ACTIVE_LOW>;
+		pwdn-gpios = <&gpio2 RK_PD4 GPIO_ACTIVE_LOW>;
+		pinctrl-names = "rockchip,camera_default";
+		pinctrl-0 = <&camera_pwr>,<&camera_rst>,<&camera_pdn>;
+#if CAMERA_ONLINE
+		/* reset-gpios = <>; */
+		/*	avdd-supply = <>; */
+		/*	dovdd-supply = <>; */
+		/*	dvdd-supply = <>; */
+		reset-gpios = <&gpio2 10 GPIO_ACTIVE_HIGH>;
+		pwdn-gpios = <&gpio4 29 GPIO_ACTIVE_HIGH>;
+		pinctrl-names = "rockchip,camera_default";
+		pinctrl-0 = <&cif_clkout>;
+		port {
+			ucam_out1: endpoint {
+				//remote-endpoint = <&mipi_in_ucam0>;
+				remote-endpoint = <&mipi_in_ucam1>;
+				data-lanes = <1 2>;
+			};
+		};
+#endif 
+	};
 };
 
 &i2s0 {
@@ -656,6 +687,20 @@
 	speaker {
 		speaker_pin: speaker-pin {
 			rockchip,pins = <4 RK_PD4 RK_FUNC_GPIO &pcfg_pull_up>;
+		};
+	};
+
+	camera {
+		camera_pwr: camera-pwr {
+			rockchip,pins = <1 RK_PA2 RK_FUNC_GPIO &pcfg_pull_up>;
+		};
+
+		camera_rst: camera-rst {
+			rockchip,pins = <2 RK_PD3 RK_FUNC_GPIO &pcfg_pull_up>;
+		};
+
+		camera_pdn: camera-pdn {
+			rockchip,pins = <2 RK_PD4 RK_FUNC_GPIO &pcfg_pull_up>;
 		};
 	};
 

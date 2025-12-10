@@ -140,8 +140,10 @@ struct ov8858_otp_info_r2a {
 
 static const char * const ov8858_supply_names[] = {
 	"avdd",		/* Analog power */
+#if 0
 	"dovdd",	/* Digital I/O power */
 	"dvdd",		/* Digital core power */
+#endif 
 };
 
 #define OV8858_NUM_SUPPLIES ARRAY_SIZE(ov8858_supply_names)
@@ -190,6 +192,7 @@ struct ov8858 {
 	unsigned int		cfg_num;
 	unsigned int		pixel_rate;
 	bool			power_on;
+	int 			debug_freq;
 
 	struct ov8858_otp_info_r1a *otp_r1a;
 	struct ov8858_otp_info_r2a *otp_r2a;
@@ -3449,6 +3452,7 @@ static int ov8858_probe(struct i2c_client *client,
 	char facing[2];
 	int ret;
 
+
 	dev_info(dev, "driver version: %02x.%02x.%02x",
 		DRIVER_VERSION >> 16,
 		(DRIVER_VERSION & 0xff00) >> 8,
@@ -3459,6 +3463,8 @@ static int ov8858_probe(struct i2c_client *client,
 		return -ENOMEM;
 
 	ov8858->client = client;
+
+
 	ret = of_property_read_u32(node, RKMODULE_CAMERA_MODULE_INDEX,
 				   &ov8858->module_index);
 	ret |= of_property_read_string(node, RKMODULE_CAMERA_MODULE_FACING,
@@ -3467,6 +3473,8 @@ static int ov8858_probe(struct i2c_client *client,
 				       &ov8858->module_name);
 	ret |= of_property_read_string(node, RKMODULE_CAMERA_LENS_NAME,
 				       &ov8858->len_name);
+	ret |= of_property_read_u32(node, "rockchip,camera-module-debug-freq",
+				   &ov8858->debug_freq);
 	if (ret) {
 		dev_err(dev,
 			"could not get module information!\n");
@@ -3477,7 +3485,7 @@ static int ov8858_probe(struct i2c_client *client,
 	if (IS_ERR(ov8858->xvclk)) {
 		dev_err(dev, "Failed to get xvclk\n");
 		return -EINVAL;
-	}
+	}	
 
 	ov8858->power_gpio = devm_gpiod_get(dev, "power", GPIOD_OUT_LOW);
 	if (IS_ERR(ov8858->power_gpio))
@@ -3495,6 +3503,12 @@ static int ov8858_probe(struct i2c_client *client,
 	if (ret) {
 		dev_err(dev, "Failed to get power regulators\n");
 		return ret;
+	}
+
+	if(ov8858->debug_freq > 0) {
+		ret =__ov8858_power_on(ov8858);
+		dev_err(dev, "debug mode: power on & setup clk\n");
+		return 0;
 	}
 
 	ret = ov8858_parse_of(ov8858);
@@ -3587,6 +3601,9 @@ static void ov8858_remove(struct i2c_client *client)
 	struct v4l2_subdev *sd = i2c_get_clientdata(client);
 	struct ov8858 *ov8858 = to_ov8858(sd);
 
+	if(ov8858->debug_freq > 0) {
+		return ;
+	}
 	v4l2_async_unregister_subdev(sd);
 #if defined(CONFIG_MEDIA_CONTROLLER)
 	media_entity_cleanup(&sd->entity);
