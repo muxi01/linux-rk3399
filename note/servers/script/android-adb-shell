@@ -1,0 +1,77 @@
+#!/bin/bash
+
+ADB_GADGET="/sys/kernel/config/usb_gadget/g1"
+function conifg_clean()
+{
+	if [ -e ${ADB_GADGET} ] ; then 
+		if [ -e "${ADB_GADGET}/UDC" ] ; then 
+			echo "" > "${ADB_GADGET}/UDC"
+		fi
+		rm -rf "${ADB_GADGET}/configs/c.1/strings/0x409"
+		rm -rf "${ADB_GADGET}/configs/c.1"
+		rm -rf "${ADB_GADGET}/functions/ffs.adb"
+		rm -rf "${ADB_GADGET}/strings/0x409"
+		rm -rf "${ADB_GADGET}"
+	fi
+}
+
+function configfs_init()
+{
+	mountfs=$(mount |grep configfs)
+	[ "${mountfs}" = "" ] && mount -t configfs none /sys/kernel/config
+	mkdir "${ADB_GADGET}" -m 770
+	echo "0x2207" > "${ADB_GADGET}/idVendor"
+	echo "0x0002" > "${ADB_GADGET}/idProduct"
+	echo "0x0100" > "${ADB_GADGET}/bcdDevice"
+	echo "0x0200" > "${ADB_GADGET}/bcdUSB"
+
+
+	mkdir "${ADB_GADGET}/strings/0x409" -m 770 
+	echo "Rockchip" > "${ADB_GADGET}/strings/0x409/manufacturer"
+	echo "ADB Gadget" > "${ADB_GADGET}/strings/0x409/product"
+	echo "12345678" > "${ADB_GADGET}/strings/0x409/serialnumber"
+
+	mkdir "${ADB_GADGET}/configs/c.1" -m 770 
+	mkdir "${ADB_GADGET}/configs/c.1/strings/0x409" -m 770 
+	echo "500" > "${ADB_GADGET}/configs/c.1/MaxPower"
+	echo "ADB Config" > "${ADB_GADGET}/configs/c.1/strings/0x409/configuration"
+
+	mkdir "${ADB_GADGET}/functions/ffs.adb" -m 770 
+	ln -s "${ADB_GADGET}/functions/ffs.adb" "${ADB_GADGET}/configs/c.1/ffs.adb"
+}
+
+
+function mount_ffs()
+{
+	mkdir /dev/usb-ffs
+	mkdir /dev/usb-ffs/adb
+	mount -o uid=2000,gid=2000 -t functionfs adb /dev/usb-ffs/adb
+}
+
+
+function start_apps()
+{
+	export ADB_PORT=5555
+	export ADB_NO_AUTH=1
+	/usr/sbin/start-stop-daemon --start --quiet --background --exec /usr/sbin/adbd
+	sleep 1
+	ls /sys/class/udc/ | xargs echo > "${ADB_GADGET}/UDC"
+}
+
+
+
+case "$1" in 
+	start)
+		configfs_init
+		mount_ffs
+		start_apps
+	;;
+	stop)
+		conifg_clean
+	;;
+	*)
+	;;
+esac
+
+
+

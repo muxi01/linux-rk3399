@@ -1,0 +1,1 @@
+/usr/lib/firmware/orginal/nvram_ap6212a.txt

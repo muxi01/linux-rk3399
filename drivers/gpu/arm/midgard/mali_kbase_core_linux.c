@@ -1030,8 +1030,13 @@ static int assign_irqs(struct platform_device *pdev)
 		 * we assume there is no IRQ resource specified for the GPU.
 		 */
 		irq = platform_get_irq_byname(pdev, irq_names_caps[i]);
-		if (irq < 0)
+		if (irq < 0) {
 			irq = platform_get_irq_byname(pdev, irq_names[i]);
+			if(irq >= 0) {
+				dev_err(kbdev->dev, "but got IRQ resource '%s'\n", irq_names[i]);
+			}
+		}
+			
 #else
 		irq = platform_get_irq(pdev, i);
 #endif /* CONFIG_OF */

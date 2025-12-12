@@ -7,6 +7,7 @@
 #include "rk3399-opp.dtsi"
 #include "rk3399-linux.dtsi"
 
+#define GPU_STRATEGY 1  /*1:Panfrost GPU  0:Midgard GPU*/
 #define SOUND_CARD  1
 #define TOUCH_SCREEN 1
 #define CAMERA_ONLINE 0
@@ -17,7 +18,6 @@
 	chosen {
 		bootargs = "earlycon=uart8250,mmio32,0xff1a0000 video=DSI-1:480x800 console=ttyFIQ0  console=tty1 rw root=/dev/mmcblk0p4 rootfstype=ext4 rootwait";
 	};
-
 
 	//DONE
 	gpio-keys {
@@ -260,6 +260,9 @@
 };
 
 &gpu {
+#if GPU_STRATEGY
+	compatible = "rockchip,rk3399-mali", "arm,mali-t860";
+#endif 
 	status = "okay";
 	mali-supply = <&vdd_gpu>;
 };

@@ -1,0 +1,12 @@
+[Unit]
+Description=Configure USB gadget
+
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/mobian-usb-gadget start
+ExecStop=/usr/sbin/mobian-usb-gadget stop
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+
