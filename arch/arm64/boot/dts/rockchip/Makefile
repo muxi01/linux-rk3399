@@ -69,6 +69,7 @@
 # dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-ficus.dtb
 # dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-firefly.dtb
 dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-firefly-sogou.dtb
+dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399pro-cloudminds.dtb 
 # dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-gru-bob.dtb
 # dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-gru-kevin.dtb
 # dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-gru-scarlet-dumo.dtb
