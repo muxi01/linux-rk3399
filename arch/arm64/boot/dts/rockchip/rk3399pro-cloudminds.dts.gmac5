@@ -513,26 +513,11 @@
 	gpio1830-supply = <&vcc_3v0>;
 };
 
-#if 0
-M2 M-KEY PCIE IO MAP 
-|------------------------------------|---------|
-|-------------------------------543--|4------|
-L5-->R82-->Q6-->REST_DEVICE   GPIO0_12
-L4-->R78-->Q8-->CLKREQ 
-L3-->R77-->Q9-->WAKE_UP_DEVICE Y
-R4-->R80-->Q7-->32K
-#endif 
-
 &pcie_phy {
 	status = "okay";
 };
 
 &pcie0 {
-	ep-gpios = <&gpio0 RK_PB4 GPIO_ACTIVE_HIGH>;
-	num-lanes = <4>;
-	pinctrl-names = "default","mkey_reset";
-	pinctrl-0 = <&pcie_clkreqn_cpm>;
-	pinctrl-1 = <&m2_mkey_reset>;
 	status = "okay";
 };
 
@@ -540,6 +525,7 @@ R4-->R80-->Q7-->32K
 	status = "okay";
 	pmu1830-supply = <&vcc_1v8>;
 };
+
 
 
 &uart0 {
@@ -635,7 +621,7 @@ R4-->R80-->Q7-->32K
 	status = "okay";
 };
 
-//---------------------USB0
+
 &u2phy0 {
 	status = "okay";
 	u2phy0_otg: otg-port {
@@ -653,36 +639,9 @@ R4-->R80-->Q7-->32K
 	maximum-speed = "high-speed";
 	phys = <&u2phy0_otg>;
     phy-names = "usb2-phy";
-	dr_mode = "otg";
+	//dr_mode = "otg";
+	dr_mode = "peripheral";
 	usb-role-switch;
-};
-
-//--------------usb1
-&u2phy1 {
-	status = "okay";
-	u2phy1_otg: otg-port {
-		status = "okay";
-	};
-	u2phy1_host: host-port {
-		status = "okay";
-	};
-};
-
-&usb_host1_ehci {
-	status = "okay";
-};
-
-&usb_host1_ohci {
-	status = "okay";
-};
-
-&usbdrd3_1 {
-	status = "okay";
-};
-
-&usbdrd_dwc3_1 {
-	status = "okay";
-	dr_mode = "host";
 };
 
 
@@ -695,13 +654,6 @@ R4-->R80-->Q7-->32K
 		     rockchip,pins =
 			     <0 RK_PA2 1 &pcfg_pull_none>;
 	     };
-	};
-
-	pcie {
-		m2_mkey_reset: m2-mkey-reset {
-			rockchip,pins =
-				<0 RK_PB4 RK_FUNC_GPIO &pcfg_pull_up>;
-		};
 	};
 
 	pmic {
