@@ -87,6 +87,17 @@
 		compatible = "rockchip,dw-hdmi-audio";
 		#sound-dai-cells = <0>;
 	};
+
+	leds {
+		compatible = "gpio-leds";
+		pinctrl-names = "default";
+		pinctrl-0 = <&work_led_pin>;
+		work_led: led-0 {
+			label = "green:heartbeat";
+			linux,default-trigger = "heartbeat";
+			gpios = <&gpio3 RK_PD6 GPIO_ACTIVE_HIGH>;
+		};
+	};
 };
 
 &cpu_l0 {
@@ -517,9 +528,9 @@
 M2 M-KEY PCIE IO MAP 
 |------------------------------------|---------|
 |-------------------------------543--|4------|
-L5-->R82-->Q6-->REST_DEVICE   GPIO0_12
-L4-->R78-->Q8-->CLKREQ 
-L3-->R77-->Q9-->WAKE_UP_DEVICE Y
+L5-->R82-->Q6-->REST_DEVICE   	GPIO0_12 GPIO0_B4 | GPIO1_10 care bood
+L4-->R78-->Q8-->CLKREQ 			GPIO4_24 GPIO4_D0
+L3-->R77-->Q9-->WAKE_UP_DEVICE  GPIO0_8  GPIO0_B1
 R4-->R80-->Q7-->32K
 #endif 
 
@@ -527,12 +538,12 @@ R4-->R80-->Q7-->32K
 	status = "okay";
 };
 
+
 &pcie0 {
-	ep-gpios = <&gpio0 RK_PB4 GPIO_ACTIVE_HIGH>;
+	ep-gpios = <&gpio0 RK_PB4 GPIO_ACTIVE_LOW>;
 	num-lanes = <4>;
-	pinctrl-names = "default","mkey_reset";
+	pinctrl-names = "default";
 	pinctrl-0 = <&pcie_clkreqn_cpm>;
-	pinctrl-1 = <&m2_mkey_reset>;
 	status = "okay";
 };
 
@@ -697,10 +708,17 @@ R4-->R80-->Q7-->32K
 	     };
 	};
 
+	led {
+		work_led_pin: work-led-pin {
+			rockchip,pins =
+				<3 RK_PD6 RK_FUNC_GPIO &pcfg_pull_up>;
+		};
+	};
+
 	pcie {
 		m2_mkey_reset: m2-mkey-reset {
 			rockchip,pins =
-				<0 RK_PB4 RK_FUNC_GPIO &pcfg_pull_up>;
+				<1 RK_PB2 RK_FUNC_GPIO &pcfg_pull_up>;
 		};
 	};
 
