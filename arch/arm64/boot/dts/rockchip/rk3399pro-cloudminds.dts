@@ -16,11 +16,9 @@
 
 / {
 	compatible = "rockchip,rk3399pro-evb-v11-linux", "rockchip,rk3399pro";
-
 	chosen {
 		bootargs = "earlycon=uart8250,mmio32,0xff1a0000 console=ttyFIQ0  console=tty1 rw root=/dev/mmcblk0p4 rootfstype=ext4 rootwait";
 	};
-
 	clkin_gmac: external-gmac-clock {
 		compatible = "fixed-clock";
 		clock-frequency = <125000000>;
@@ -91,11 +89,29 @@
 	leds {
 		compatible = "gpio-leds";
 		pinctrl-names = "default";
-		pinctrl-0 = <&work_led_pin>;
+		pinctrl-0 = <&work_led_pin &usb_power_pin>;
 		work_led: led-0 {
 			label = "green:heartbeat";
 			linux,default-trigger = "heartbeat";
 			gpios = <&gpio3 RK_PD6 GPIO_ACTIVE_HIGH>;
+		};
+
+		usb_pwr: usb-pwr {
+			label = "usb:power";
+			gpios = <&gpio3 RK_PC2 GPIO_ACTIVE_HIGH>;
+		};
+	};
+
+	gpio-keys {
+		compatible = "gpio-keys";
+		autorepeat;
+		pinctrl-names = "default";
+		pinctrl-0 = <&ir_gpio_key>;
+
+		key-power {
+			debounce-interval = <100>;
+			gpios = <&gpio3 RK_PC3 GPIO_ACTIVE_LOW>;
+			label = "GPIO IR key";
 		};
 	};
 };
@@ -449,9 +465,9 @@
 		};
 	};
 
-	vdd_cpu_b: tcs4525@1c {
-		compatible = "tcs,tcs4525";
-		reg = <0x1c>;
+	vdd_cpu_b: syr827@40 {
+		compatible = "silergy,syr827";
+		reg = <0x40>;
 		vin-supply = <&vcc5v0_sys>;
 		regulator-compatible = "fan53555-reg";
 		pinctrl-0 = <&vsel1_gpio>;
@@ -469,9 +485,9 @@
 		};
 	};
 
-	vdd_gpu: tcs4526@10 {
-		compatible = "tcs,tcs4526";
-		reg = <0x10>;
+	vdd_gpu: syr828@41 {
+		compatible = "silergy,syr828";
+		reg = <0x41>;
 		vin-supply = <&vcc5v0_sys>;
 		regulator-compatible = "fan53555-reg";
 		pinctrl-0 = <&vsel2_gpio>;
@@ -502,6 +518,7 @@
 	i2c-scl-falling-time-ns = <11>;
 };
 
+
 &i2c4 {
 	status = "okay";
 	i2c-scl-rising-time-ns = <345>;
@@ -514,6 +531,7 @@
 	i2c-scl-falling-time-ns = <11>;
 	clock-frequency = <100000>;
 };
+
 
 
 &io_domains {
@@ -665,6 +683,7 @@ R4-->R80-->Q7-->32K
 	phys = <&u2phy0_otg>;
     phy-names = "usb2-phy";
 	dr_mode = "otg";
+	//dr_mode = "peripheral";
 	usb-role-switch;
 };
 
@@ -713,7 +732,20 @@ R4-->R80-->Q7-->32K
 			rockchip,pins =
 				<3 RK_PD6 RK_FUNC_GPIO &pcfg_pull_up>;
 		};
+
+		usb_power_pin: usb-pwr-pin {
+			rockchip,pins =
+				<3 RK_PC2 RK_FUNC_GPIO &pcfg_pull_up>;
+		};
 	};
+
+	key {
+		ir_gpio_key: ir-gpio-key {
+			rockchip,pins =
+				<3 RK_PC3 RK_FUNC_GPIO &pcfg_pull_up>;
+		};
+	};
+
 
 	pcie {
 		m2_mkey_reset: m2-mkey-reset {
